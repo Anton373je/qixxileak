@@ -1,0 +1,1022 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Document</title>
+
+    <style>
+        :root {
+            --bg: #0a0a0b;
+            --panel: #111113;
+            --panel-2: #151517;
+            --text: #e8e8ea;
+            --muted: #8c8c93;
+            --border: rgba(255,255,255,.08);
+            --accent: #ffffff;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            scroll-behavior: smooth;
+            background: var(--bg);
+        }
+
+        body {
+            min-height: 100vh;
+            background:
+                radial-gradient(circle at 50% -10%, rgba(255,255,255,.07), transparent 35%),
+                var(--bg);
+            color: var(--text);
+            font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont,
+                         "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Hauptbereich */
+        .page {
+            width: min(100% - 32px, 1100px);
+            margin: 0 auto;
+            padding: 56px 0;
+        }
+
+        /* Dezente Kopfzeile */
+        .top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 14px;
+            padding: 0 4px;
+        }
+
+        .top-left {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+        }
+
+        .dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: var(--accent);
+            box-shadow: 0 0 14px rgba(255,255,255,.45);
+        }
+
+        .label {
+            color: var(--muted);
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: .16em;
+            text-transform: uppercase;
+        }
+
+        .panel {
+            overflow: hidden;
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            background: linear-gradient(180deg, var(--panel-2), var(--panel));
+            box-shadow:
+                0 24px 80px rgba(0,0,0,.35),
+                inset 0 1px 0 rgba(255,255,255,.025);
+        }
+
+        /* Die drei Punkte oben */
+        .bar {
+            height: 44px;
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            padding: 0 16px;
+            border-bottom: 1px solid var(--border);
+            background: rgba(255,255,255,.015);
+        }
+
+        .bar span {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #3a3a3e;
+        }
+
+        /* =========================================================
+           NUR DIESEN BEREICH ÄNDERN
+
+           Deinen kompletten Text einfach zwischen die beiden
+           <script>-Zeilen kopieren.
+
+           Keine <p>, <br> oder andere HTML-Tags nötig.
+           Zeilenumbrüche und Leerzeichen bleiben automatisch erhalten.
+           ========================================================= */
+        .content {
+            padding: 38px 42px;
+            white-space: pre-wrap;
+            overflow-wrap: anywhere;
+
+            font-family:
+                "SFMono-Regular",
+                "Cascadia Code",
+                "Roboto Mono",
+                Consolas,
+                "Liberation Mono",
+                monospace;
+
+            font-size: 13px;
+            line-height: 1.72;
+            letter-spacing: .01em;
+            color: #d7d7db;
+            tab-size: 4;
+        }
+
+        .content::selection {
+            background: #ffffff;
+            color: #000000;
+        }
+
+        /* Schöne, dezente Scrollbar */
+        ::-webkit-scrollbar {
+            width: 9px;
+            height: 9px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #303035;
+            border: 2px solid var(--bg);
+            border-radius: 999px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #44444a;
+        }
+
+
+        /* ================================
+           BILDERGALERIE
+        ================================= */
+
+        .gallery {
+            padding: 0 42px 42px;
+        }
+
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+            gap: 12px;
+        }
+
+        .gallery-item {
+            position: relative;
+            aspect-ratio: 16 / 10;
+            overflow: hidden;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            background: #0d0d0f;
+            cursor: pointer;
+            transition: transform .2s ease, border-color .2s ease;
+        }
+
+        .gallery-item:hover {
+            transform: translateY(-2px);
+            border-color: rgba(255,255,255,.18);
+        }
+
+        .gallery-item img {
+            width: 100%;
+            height: 100%;
+            display: block;
+            object-fit: cover;
+            transition: transform .35s ease, opacity .35s ease;
+        }
+
+        .gallery-item:hover img {
+            transform: scale(1.035);
+        }
+
+        .gallery-empty {
+            color: var(--muted);
+            font-size: 12px;
+            text-align: center;
+            padding: 24px 0 4px;
+        }
+
+        /* Vollbild-Anzeige */
+        .lightbox {
+            position: fixed;
+            inset: 0;
+            z-index: 1000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 28px;
+            background: rgba(0,0,0,.88);
+            backdrop-filter: blur(14px);
+        }
+
+        .lightbox.open {
+            display: flex;
+        }
+
+        .lightbox img {
+            max-width: min(94vw, 1500px);
+            max-height: 90vh;
+            object-fit: contain;
+            border-radius: 10px;
+            box-shadow: 0 30px 100px rgba(0,0,0,.55);
+        }
+
+        .lightbox-close {
+            position: fixed;
+            top: 18px;
+            right: 22px;
+            width: 40px;
+            height: 40px;
+            border: 1px solid rgba(255,255,255,.12);
+            border-radius: 50%;
+            background: rgba(255,255,255,.06);
+            color: #fff;
+            font-size: 22px;
+            line-height: 1;
+            cursor: pointer;
+        }
+
+        .lightbox-close:hover {
+            background: rgba(255,255,255,.12);
+        }
+
+        @media (max-width: 700px) {
+            .gallery {
+                padding: 0 20px 26px;
+            }
+
+            .gallery-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 8px;
+            }
+
+            .lightbox {
+                padding: 14px;
+            }
+        }
+
+        /* Mobile */
+        @media (max-width: 700px) {
+            .page {
+                width: min(100% - 18px, 1100px);
+                padding: 24px 0;
+            }
+
+            .content {
+                padding: 26px 20px;
+                font-size: 12px;
+                line-height: 1.65;
+            }
+
+            .top {
+                margin-bottom: 10px;
+            }
+
+            .panel {
+                border-radius: 14px;
+            }
+        }
+
+        @media (prefers-reduced-motion: no-preference) {
+            .panel {
+                animation: enter .45s ease-out both;
+            }
+
+            @keyframes enter {
+                from {
+                    opacity: 0;
+                    transform: translateY(8px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <main class="page">
+
+        <div class="top">
+            <div class="top-left">
+                <span class="dot"></span>
+                <span class="label">Document</span>
+            </div>
+        </div>
+
+        <section class="panel">
+
+            <div class="bar">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+
+            <div class="content" id="content"></div>
+
+            <div class="gallery" id="gallery">
+                <div class="gallery-grid" id="galleryGrid"></div>
+                <div class="gallery-empty" id="galleryEmpty" hidden></div>
+            </div>
+
+        </section>
+
+    </main>
+
+    <div class="lightbox" id="lightbox" aria-hidden="true">
+        <button class="lightbox-close" id="lightboxClose" aria-label="Schließen">×</button>
+        <img id="lightboxImage" alt="">
+    </div>
+
+    <!-- =============================================================
+         DEIN TEXT KOMMT NUR HIER HINEIN
+
+         Einfach zwischen den beiden Zeilen deinen kompletten
+         Text einfügen. Nichts formatieren.
+
+         Beispiel:
+
+         Mein erster Absatz.
+
+         Mein zweiter Absatz.
+         ============================================================= -->
+    <script id="raw-text" type="text/plain">
+            MALORA CITY QIXXI AKA JUSTIN ASCOLI INHABER UND PEDO FULL LEAK!!
+
+KURZ ZU IHM ER WAR TEIL MEHREREN FIVEM ROLEPLAY SERVERN IN ALL SEINEN JAHREN HAT IMMER WIEDER PROBIERT VON ZEIT ZU ZEIT IMMER MEHR AN DATEN ZU KOMMEN BZW ES SO ZU MACHEN DAS IHM DANN DAS PROJEKTE GEHÖRTE SODASS ER ES DANN ANDEREN WEGNEHMEN KONNTE. DER GUTE JUSTIN SCHREIBT DAZU MEHREREN FRAUEN AUS SEINEM EIGENEN TEAM AN ODER FRAUEN DIE AM SERVER SPIELEN PRIVAT MIT 2 ACCS AN SAGT DAS ER QIXXI IST DIE FRAUEN SOLLEN ABER NIX DAVON WEITER SAGEN UND DANN DRÄNGT ER SIE NUDES ZU SCHICKEN ETC. WAS ER AUCH MACHT IST GELD ABZIEHEN VON SERVER EINAHMEN, STEUERHINTERZIEHUNG, NICHTS WAR ODER IST ANGEMELDET. ER STREITET ALLES AB WIR HABEN MONATE LANG FRESSE GEHALTEN ABER JETZT PACKEN WIR AUS!
+
+┌──────────────────────────────────────────────┬──────────────────────────────────────────────┐ │
+││ Aliases │ Usernames │ │
+│┼──────────────────────────────────────────────┼──────────────────────────────────────────────┼ │
+││ Justin Ascoli │ lolking1236 │ │
+││ Justin Paul │ miniaturemysterious4 │ │
+││ │ Justin.Ascoli │ │
+││ │ qixxi │ │
+││ │ qixxi2 │ │
+││ │ .qixxi. │ │
+│└──────────────────────────────────────────────┴──────────────────────────────────────────────┘ │
+
+ │
+│ » Legal Name: Justin Ascoli │
+│ » Also known as: Justin Paul │
+│ │
+│ » Date of Birth: 2000-01-05 │
+│ │
+│ » Country: Germany │
+│ └──▪ State: Bayern │
+│ │ City: Fürth │
+│ │ ZIP: 90765 │
+│ │
+│ » Address: Flurstraße 93, 90765 Fürth │
+│ │
+│ » Phone: +49 15756359841 │
+│ │
+
+│
+│ » Email: justin-ascoli.123@web.de │
+│ │ Breaches: Twitter 2022-01, Aptoide 2020-04, Deezer 2019-09, Wishbone 2020-01, IntelByte │
+│ │
+│ » Email: yurov_a_a@mail.ua │
+│ │ Breaches: BlankMediaGames.com │
+│ │
+│ » Email: tix_10@hotmail.com │
+│ │ Breaches: AdultFriendFinder │
+│ │
+│ » Email: whughes99@hotmail.com │
+│ │ Breaches: AdultFriendFinder (0643) │
+│ │
+│ » Email: milrasa@gmail.com │
+│ │ Breaches: Neopets (0882) │
+│ │
+
+│
+│ » Twitter │
+│ └──▪ Username: @lolking1236 │
+│ │ Name: justin ascoli │
+│ │ Created at: 2016-04-07 │
+│ │ Follower: 2 │
+│ │
+│ » Roblox │
+│ └──▪ ID: 61506314 │
+│ │ Username: Qixxi │
+│ │ Display: Qixxi │
+│ │
+│ » Deezer │
+│ └──▪ Username: Justin.Ascoli │
+│ │ Vollname: Justin Ascoli │
+│ │ DOB: 2000-01-05 │
+│ │ Registriert: 2016-03-31 │
+│ │ UID: 933540701 │
+│ │
+│ » Wishbone │
+│ └──▪ Username: miniaturemysterious4 │
+│ │ Vollname: Justin Paul │
+│ │ UID: 37745736 │
+│ │ Created: 2019-09-03 │
+│ │
+│ » Aptoide │
+│ └──▪ Username: Justin Paul │
+│ │ IP: 84.57.119.216 │
+│ │
+│ » BlankMediaGames │
+│ └──▪ Username: Qixxi │
+│ │ Passwort: blek2014 │
+│ │
+│ » vkmix.com │
+│ └──▪ Username: Qixxi │
+│ │ Passwort: blek2014 │
+│ │
+│ » Neopets │
+│ └──▪ Username: qixxi │
+│ │ Passwort: 1900a │
+│ │
+│ » AdultFriendFinder (2x) │
+│ └──▪ Username: qixxi / Qixxi │
+│ │ Emails: tix_10@hotmail.com, whughes99@hotmail.com │
+│ │
+
+│
+│ » Kontoinhaber: Justin Ascoli │
+│ » IBAN: DE69 1001 0178 3851 4761 82 │
+
+ │
+│ » IP: 84.57.119.216 │
+│ └──▪ Location: Stuttgart, Deutschland │
+│ │
+
+│
+│ » .qixxi. │
+│ └──▪ ID: 1519472253031415931 │
+│ │
+│ » malora_city │
+│ └──▪ ID: 1473250927376072882 │
+│ │
+│ » .qixxi. │
+│ └──▪ ID: 1141050054833094706 │
+│ │
+│ » qixxi2 │
+│ └──▪ ID: 1312224470601044082 │
+│ │
+
+ │
+│ » Roblox ID: 61506314 │
+│ │
+
+│
+│ » justinascoli04@gmail.com │
+│ │
+
+-----------------------------------------------------------------
+Justin Ascoli
+Flurstraße 93
+90765 Fürth
+Deutschland
+
+-----------------------------------------------------------------
+
+Kontoinhaber Justin Ascoli
+IBAN DE69 1001 0178 3851 4761 82
+
+-----------------------------------------------------------------
+
+.qixxi.
+1519472253031415931
+
+-----------------------------------------------------------------
+
+malora_city
+1473250927376072882
+
+-----------------------------------------------------------------
+
+.qixxi.
+1141050054833094706
+
+-----------------------------------------------------------------
+
+qixxi2
+1312224470601044082
+
+-----------------------------------------------------------------
+
++49 15756359841
+
+-----------------------------------------------------------------
+
+justinascoli04@gmail.com
+
+
+-----------------------------------------------------------------
+
+
+# HE IS A PEDO!!!
+
+==================================================
+                 Information
+==================================================
+
+Name-- Justin Ascoli
+Discord--quixxi
+City--Nürnberg
+Ort--Fürth
+Addresse--Leopoldstraße 14
+Nummer--+4915144207247
+Alter--21
+
+
+==================================================
+           Girlfriend Information
+==================================================
+
+
+
+Name--N/A
+Discord--N/A
+City--Nürnberg
+Ort--Fürth
+Addresse--Flurstraße 93
+Nummer--+4915147381314
+Alter--19
+
+============================================================
+               CREDIT CARDS
+============================================================
+
+[1] Card Number: 5395720518778092
+    Expiry: 12/2029
+    Cardholder: Justin Ascoli
+    CVC: 801
+
+[2] Card Number: 5313770057102708
+    Expiry: 4/2030
+    Cardholder: JUSTIN ASCOLI
+    CVC: 447
+
+
+
+
+
+
+
+==================================================
+           System Information
+==================================================
+
+
+Username: qixxi
+PC Name: DESKTOP-290M7SP
+OS Version: Windows 11 (Home)
+CPU: Intel(R) Core(TM) i9-10900K CPU @ 3.70GHz
+GPU: NVIDIA GeForce RTX 3060
+RAM: 31 GB (32624 MB)
+
+
+==================================================
+Discord Tokens: 1
+Passwords: 58
+Cookies: 4855
+Autofills: 889
+Google Tokens: 0
+Credit Cards: 2
+Additional Files: 98
+==================================================
+
+[1] https://accounts.google.com/v3/signin/challenge/pwd
+    Username: qixxi02@gmail.com
+    Password: QixxiIsDog1u
+    Browser:  Microsoft Edge (Default)
+
+[2] https://accounts.google.com/v3/signin/challenge/pwd
+    Username: qixxivrl@gmail.com
+    Password: QixxiIsDog1u
+    Browser:  Microsoft Edge (Default)
+
+[3] https://www.instagram.com/accounts/signup/
+    Username: 9justin76
+    Password: 9x.:Dqz23HUt!vJ
+    Browser:  Microsoft Edge (Default)
+
+[4] https://accounts.google.com/v3/signin/challenge/pwd
+    Username: peschek.leeann@gmail.com
+    Password: Lee1020Ann
+    Browser:  Microsoft Edge (Default)
+
+[5] https://account.riotgames.com/
+    Username: qixxi3052@gmail.com
+    Password: mevtGPw2d7cL
+    Browser:  Microsoft Edge (Default)
+
+[6] https://account.riotgames.com/
+    Username: Chakour1
+    Password: QixxiIsDog1u
+    Browser:  Microsoft Edge (Default)
+
+[7] https://app.kaufland-mobil.de/Login
+    Username: 015147381314
+    Password: QixxiIsDog1u?!
+    Browser:  Microsoft Edge (Default)
+
+[8] https://idmsa.apple.com/appleauth/auth/authorize/signin
+    Username: https.justin.paul@gmail.com
+    Password: LeeAnn2707
+    Browser:  Microsoft Edge (Default)
+
+[9] https://authenticate.riotgames.com/
+    Username: Chakour1
+    Password: QixxiIsDog1u
+    Browser:  Microsoft Edge (Default)
+
+[10] https://www.roblox.com/de/login
+    Username: Qixxi04
+    Password: QixxiIsDog1u!
+    Browser:  Microsoft Edge (Default)
+
+[11] https://customer.cc.at.paysafecard.com/rest/payment/panel
+    Username: justinascoli04@gmail.com
+    Password: QixxiIsDog1u!!!
+    Browser:  Microsoft Edge (Default)
+
+[12] https://login.paysafecard.com/customer-auth/
+    Username: justinascoli04@gmail.com
+    Password: QixxiIsDog1u!!!
+    Browser:  Microsoft Edge (Default)
+
+[13] https://discord.com/login
+    Username: qixxi02@gmail.com
+    Password: QixxiIsDog1u!???
+    Browser:  Microsoft Edge (Default)
+
+[14] https://www.slotmagie.de/
+    Username: justinascoli04@gmail.com
+    Password: QixxiIsDog1u!
+    Browser:  Microsoft Edge (Default)
+
+[15] https://de.snspy.org/registration
+    Username: justinascoli04@gmail.com
+    Password: QixxiIsDog1u
+    Browser:  Microsoft Edge (Default)
+
+[16] https://welcome.qonto.com/signup/credentials/create-user
+    Username: N/A
+    Password: QixxiISDog1u
+    Browser:  Microsoft Edge (Default)
+
+[17] https://app.jackpotpiraten.de/login
+    Username: https.justin.paul@gmail.com
+    Password: QixxiIsDog1u!
+    Browser:  Microsoft Edge (Default)
+
+[18] https://accounts.google.com/v3/signin/challenge/pwd
+    Username: https.justin.paul2@gmail.com
+    Password: QixxiIsDog1
+    Browser:  Microsoft Edge (Default)
+
+[19] http://easy.box.de/activation.html
+    Username: N/A
+    Password: LeeAnn270724!
+    Browser:  Microsoft Edge (Default)
+
+[20] https://dudespin1.com/de/registration
+    Username: justinascoli04@gmail.com
+    Password: QixxiIsDog1u
+    Browser:  Microsoft Edge (Default)
+
+[21] https://www.biggg.com/de/login/
+    Username: justinascoli04@gmail.com
+    Password: QixxiIsDog1u!
+    Browser:  Microsoft Edge (Default)
+
+[22] http://45.145.40.12:40120/login
+    Username: Qixxi
+    Password: QixxiIsDog1u
+    Browser:  Microsoft Edge (Default)
+
+[23] https://www.paypal.com/pay/
+    Username: qixxi02@gmail.com
+    Password: QixxiIsDog1u
+    Browser:  Microsoft Edge (Default)
+
+[24] https://www.wunderino.de/de/
+    Username: https.justin.paul@gmail.com
+    Password: QixxiIsDog1u
+    Browser:  Microsoft Edge (Default)
+
+[25] https://accounts.tebex.io/login
+    Username: sonaroleplayio@proton.me
+    Password: Qixi_xyzio31SO$NA456.dog
+    Browser:  Microsoft Edge (Default)
+
+[26] https://appleid.apple.com/auth/authorize
+    Username: https.justin.paul@gmail.com
+    Password: LeeAnn2707
+    Browser:  Microsoft Edge (Default)
+
+[27] https://steamcommunity.com/openid/loginform/
+    Username: angelinarenner
+    Password: QixxiIsDog1u
+    Browser:  Microsoft Edge (Default)
+
+[28] https://zap-hosting.com/de/shop/product/fivem-upvotes/
+    Username: Qixxi04
+    Password: QixxiIsDog1u
+    Browser:  Microsoft Edge (Default)
+
+[29] https://gftcards.de/users/add
+    Username: justinascoli04@gmail.com
+    Password: QixxiIsDog1u
+    Browser:  Microsoft Edge (Default)
+
+[30] https://authenticate.riotgames.com/
+    Username: yusufo1238
+    Password: QixxiIsDog1u
+    Browser:  Microsoft Edge (Default)
+
+[31] https://linkvertise.com/access/1420883/337.34009524888097/dynamic
+    Username: justinascoli04@gmail.com
+    Password: QixxiIsDog1u!
+    Browser:  Microsoft Edge (Default)
+
+[32] http://localhost:40120/login
+    Username: Qixxi
+    Password: QixxiIsDog1u
+    Browser:  Microsoft Edge (Default)
+
+[33] http://45.131.111.162:40120/login
+    Username: Qixxi
+    Password: QixxiIsDog1u
+    Browser:  Microsoft Edge (Default)
+
+[34] https://workupload.com/login
+    Username: justinascoli04@gmail.com
+    Password: QixxiIsDog1u
+    Browser:  Microsoft Edge (Default)
+
+[35] https://linkvertise.com/
+    Username: qixxi292@gmail.com
+    Password: QixxiIsDog1u!
+    Browser:  Microsoft Edge (Default)
+
+[36] https://forum.cfx.re/login
+    Username: Qixxi
+    Password: QixxiIsDog1u
+    Browser:  Microsoft Edge (Default)
+
+[37] https://accounts.google.com/v3/signin/challenge/pwd
+    Username: qixxi60@gmail.com
+    Password: QixxiIsDog1u
+    Browser:  Microsoft Edge (Default)
+
+[38] https://klinikumstaff.de/
+    Username: Qixxi
+    Password: KlinikumDuPenis
+    Browser:  Microsoft Edge (Default)
+
+[39] https://libertycity.net/files/gta-5/214514-surron-ultra-bee.html
+    Username: Qixxi
+    Password: QixxiIsDog1u
+    Browser:  Microsoft Edge (Default)
+
+[40] https://linkvertise.com/access/457918/ws-ffa
+    Username: justinflipper27@gmail.com
+    Password: QixxiIsDog1u!
+    Browser:  Microsoft Edge (Default)
+
+[41] https://account.proton.me/reset-password
+    Username: justinascoli04@gmail.com
+    Password: QixxiIsDog1u
+    Browser:  Microsoft Edge (Default)
+
+[42] https://stake.us/
+    Username: justinascoli04@gmail.com
+    Password: QixxiIsDog1u
+    Browser:  Microsoft Edge (Default)
+
+[43] https://1gocasino2115.com/de/registration
+    Username: justinascoli04@gmail.com
+    Password: QixxiIsDog1u
+    Browser:  Microsoft Edge (Default)
+
+[44] https://bet20play.com/de/casino
+    Username: justinascoli04@gmail.com
+    Password: QixxiIsDog1u
+    Browser:  Microsoft Edge (Default)
+
+[45] https://spanoffers.com/verde50fs/index.php
+    Username: justinascoli04@gmail.com
+    Password: QixxiIsDog1u
+    Browser:  Microsoft Edge (Default)
+
+[46] https://levelupcasino.com/de/promo/luxzilla
+    Username: justinascoli04@gmail.com
+    Password: QixxiIsDog1u
+    Browser:  Microsoft Edge (Default)
+
+[47] https://www.bitkingz.com/de
+    Username: justinascoli04@gmail.com
+    Password: QixxiIsDog1u
+    Browser:  Microsoft Edge (Default)
+
+[48] https://55nv1.casino/de
+    Username: justinascoli04@gmail.com
+    Password: QixxiIsDog1u
+    Browser:  Microsoft Edge (Default)
+
+[49] https://rollino.site/de
+    Username: justinascoli04@gmail.com
+    Password: QixxiIsDog1u
+    Browser:  Microsoft Edge (Default)
+
+[50] https://7yep245.casino/de-de/150-coin-fs
+    Username: justinascoli04@gmail.com
+    Password: QixxiIsDog1u
+    Browser:  Microsoft Edge (Default)
+
+[51] https://accounts.check24.com/login
+    Username: justinascoli04@gmail.com
+    Password: QixxiIsDog1u
+    Browser:  Microsoft Edge (Default)
+
+[52] https://www.disneyplus.com/identity/update-credentials
+    Username: justinascoli04@gmail.com
+    Password: QixxiIsDog1u!
+    Browser:  Microsoft Edge (Default)
+
+[53] https://www.razed.com/de/signup/
+    Username: Qixxi
+    Password: QixxiIsDog1u
+    Browser:  Microsoft Edge (Default)
+
+[54] https://accounts.google.com/v3/signin/challenge/pwd
+    Username: justinascoli04@gmail.com
+    Password: QixxiIsDog1u!
+    Browser:  Opera (Default)
+
+[55] https://www.paypal.com
+    Username: qixxi02@gmail.com
+    Password: QixxiIsDog1u
+    Browser:  Firefox (ubnutwhp.default-release)
+
+[56] https://accounts.tebex.io
+    Username: qixxi60@gmail.com
+    Password: MaloraCity20.03.26!Qxxi
+    Browser:  Firefox (ubnutwhp.default-release)
+
+[57] https://vfivem.com
+    Username: Qixxi1
+    Password: QixxiIsDog1u
+    Browser:  Firefox (ubnutwhp.default-release)
+
+[58] https://accounts.google.com
+    Username: qixxi60@gmail.com
+    Password: QixxiIsDog1u
+    Browser:  Firefox (ubnutwhp.default-release)
+    </script>
+
+    <script>
+        const source = document.getElementById("raw-text");
+        const content = document.getElementById("content");
+
+        // Deinen Text als reinen Text anzeigen.
+        content.textContent = source.textContent.trim();
+
+
+        /* =========================================================
+           BILDER AUS /img
+
+           Trage hier die echten Dateinamen deiner Bilder ein.
+           Die Bilder müssen im Ordner "img" neben dieser HTML-Datei liegen.
+           ========================================================= */
+
+        const imageFiles = [
+            "1.png",
+            "2.png",
+            "3.png",
+            "4.png",
+            "5.png",
+            "6.png",
+            "7.png",
+            "8.png",
+            "9.png",
+            "10.png",
+            "11.png",
+            "12.png",
+            "13.png",
+            "14.png",
+            "15.png",
+            "16.png",
+            "17.png",
+            "18.png",
+            "19.png",
+            "20.png",
+            "21.png",
+            "22.png",
+            "23.png",
+            "24.png",
+            "25.png",
+            "26.png",
+            "27.png",
+            "28.png",
+            "29.png"
+
+        ];
+
+        const galleryGrid = document.getElementById("galleryGrid");
+        const galleryEmpty = document.getElementById("galleryEmpty");
+
+        function loadImages() {
+            const validFiles = imageFiles
+                .map(name => String(name).trim())
+                .filter(name => name && !name.includes("/") && !name.includes("\\"));
+
+            validFiles.forEach((fileName) => {
+                const url = "img/" + encodeURIComponent(fileName);
+
+                const item = document.createElement("button");
+                item.className = "gallery-item";
+                item.type = "button";
+
+                const image = document.createElement("img");
+                image.src = url;
+                image.alt = fileName;
+                image.loading = "lazy";
+                image.decoding = "async";
+
+                image.addEventListener("error", () => {
+                    item.remove();
+                    if (!galleryGrid.children.length) {
+                        galleryEmpty.hidden = false;
+                        galleryEmpty.textContent = "Keine Bilder gefunden.";
+                    }
+                });
+
+                item.appendChild(image);
+                galleryGrid.appendChild(item);
+                item.addEventListener("click", () => openLightbox(url));
+            });
+
+            if (!validFiles.length) {
+                galleryEmpty.hidden = false;
+                galleryEmpty.textContent = "Keine Bilder angegeben.";
+            }
+        }
+
+
+
+
+        /* ================================
+           LIGHTBOX
+        ================================= */
+
+        const lightbox = document.getElementById("lightbox");
+        const lightboxImage = document.getElementById("lightboxImage");
+        const lightboxClose = document.getElementById("lightboxClose");
+
+        function openLightbox(url) {
+            lightboxImage.src = url;
+            lightbox.classList.add("open");
+            lightbox.setAttribute("aria-hidden", "false");
+            document.body.style.overflow = "hidden";
+        }
+
+        function closeLightbox() {
+            lightbox.classList.remove("open");
+            lightbox.setAttribute("aria-hidden", "true");
+            lightboxImage.src = "";
+            document.body.style.overflow = "";
+        }
+
+        lightboxClose.addEventListener("click", closeLightbox);
+
+        lightbox.addEventListener("click", (event) => {
+            if (event.target === lightbox) {
+                closeLightbox();
+            }
+        });
+
+        document.addEventListener("keydown", (event) => {
+            if (event.key === "Escape") {
+                closeLightbox();
+            }
+        });
+
+        loadImages();
+    </script>
+
+</body>
+</html>
